@@ -1,79 +1,74 @@
-import { useEffect, useState } from "react"
-import { listarEmbarquesDaTela } from "../services/embarques.service"
+
+import { useEffect, useState } from "react";
+import { sincronizarTela } from "../services/sincronizacao";
 import { CONFIG_TV } from "../config";
+
 const CODIGO_TELA = CONFIG_TV.codigo;
 const TEMPO_ATUALIZACAO = CONFIG_TV.intervaloEmbarques;
-function formatarHorario(horario) {
-  if (!horario) {
-    return "--:--"
-  }
 
-  return String(horario).slice(0, 5)
+function formatarHorario(horario) {
+  if (!horario) return "--:--";
+
+  return String(horario).slice(0, 5);
+}
+
+function filtrarProximosEmbarques(lista) {
+  const agora = new Date();
+
+  const horaAtualEmMinutos =
+    agora.getHours() * 60 + agora.getMinutes();
+
+  return lista
+    .filter((embarque) => {
+      if (!embarque?.horario) return false;
+
+      const [hora, minuto] = String(embarque.horario)
+        .slice(0, 5)
+        .split(":")
+        .map(Number);
+
+      const horarioEmMinutos = hora * 60 + minuto;
+
+      return horarioEmMinutos + 3 >= horaAtualEmMinutos;
+    })
+    .slice(0, 3);
 }
 
 export default function Embarques() {
-  const [embarques, setEmbarques] = useState([])
-  const [erro, setErro] = useState("")
-function filtrarProximosEmbarques(lista) {
-  const agora = new Date()
+  const [embarques, setEmbarques] = useState([]);
+  const [erro, setErro] = useState("");
 
-  const horaAtualEmMinutos =
-    agora.getHours() * 60 + agora.getMinutes()
-
-  return lista
-  .filter((embarque) => {
-    if (!embarque?.horario) {
-      return false
-    }
-
-    const [hora, minuto] =
-      String(embarque.horario)
-        .slice(0, 5)
-        .split(":")
-        .map(Number)
-
-    const horarioEmMinutos =
-      hora * 60 + minuto
-
-    return horarioEmMinutos + 3 >= horaAtualEmMinutos
-  })
-  .slice(0, 3)
-}
-  
   async function carregarEmbarques() {
     try {
-      const dados =
-        await listarEmbarquesDaTela(CODIGO_TELA)
+      const resultado = await sincronizarTela(CODIGO_TELA);
 
       setEmbarques(
-  filtrarProximosEmbarques(dados)
-)
-      setErro("")
+        filtrarProximosEmbarques(resultado.embarques || [])
+      );
+
+      setErro("");
     } catch (error) {
       console.error(
-        "Erro ao carregar embarques:",
+        "Erro na sincronização dos embarques:",
         error
-      )
+      );
 
       setErro(
-        error?.message ||
-          "Erro ao carregar horários."
-      )
+        error?.message || "Erro ao carregar horários."
+      );
     }
   }
 
   useEffect(() => {
-    carregarEmbarques()
+    carregarEmbarques();
 
     const intervalo = window.setInterval(
       carregarEmbarques,
       TEMPO_ATUALIZACAO
-    )
+    );
 
-    return () => {
-      window.clearInterval(intervalo)
-    }
-  }, [])
+    return () => window.clearInterval(intervalo);
+  }, []);
 
   return (
     <div className="embarques-player">
@@ -108,41 +103,30 @@ function filtrarProximosEmbarques(lista) {
               className="embarques-player-item"
             >
               <div className="embarques-player-horario">
-                {formatarHorario(
-                  embarque.horario
-                )}
+                {formatarHorario(embarque.horario)}
               </div>
 
               <div className="embarques-player-rota">
-                <strong>
-                  {embarque.origem}
-                </strong>
-
+                <strong>{embarque.origem}</strong>
                 <span>→</span>
-
-                <strong>
-                  {embarque.destino}
-                </strong>
+                <strong>{embarque.destino}</strong>
               </div>
 
               <div
                 className={`embarques-player-situacao ${
-                  embarque.status ===
-                  "Cancelado"
+                  embarque.status === "Cancelado"
                     ? "cancelado"
-                    : embarque.status ===
-                        "Atrasado"
-                      ? "atrasado"
-                      : "normal"
+                    : embarque.status === "Atrasado"
+                    ? "atrasado"
+                    : "normal"
                 }`}
               >
-                {embarque.status ||
-                  "No horário"}
+                {embarque.status || "No horário"}
               </div>
             </div>
           ))}
         </div>
       )}
     </div>
-  )
+  );
 }
