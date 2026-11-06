@@ -1,9 +1,9 @@
 import { useEffect, useMemo, useState } from "react"
 import { listarAnunciosDaTela } from "../services/anuncios.service"
 import { CONFIG_TV } from "../config";
-const CODIGO_TELA = "LANCHA-01"
-const TEMPO_ATUALIZACAO = 3000
 
+const CODIGO_TELA = CONFIG_TV.codigo;
+const TEMPO_ATUALIZACAO = CONFIG_TV.intervaloAnuncios;
 export default function Playlist() {
   const [anuncios, setAnuncios] = useState([])
   const [indiceAtual, setIndiceAtual] = useState(0)
