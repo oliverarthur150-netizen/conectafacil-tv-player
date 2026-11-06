@@ -1,126 +1,111 @@
-import { useEffect, useMemo, useState } from "react"
-import { listarAnunciosDaTela } from "../services/anuncios.service"
+
+import { useEffect, useMemo, useState } from "react";
+import { sincronizarTela } from "../services/sincronizacao";
 import { CONFIG_TV } from "../config";
 
 const CODIGO_TELA = CONFIG_TV.codigo;
 const TEMPO_ATUALIZACAO = CONFIG_TV.intervaloAnuncios;
+
 export default function Playlist() {
-  const [anuncios, setAnuncios] = useState([])
-  const [indiceAtual, setIndiceAtual] = useState(0)
-  const [erro, setErro] = useState("")
+  const [anuncios, setAnuncios] = useState([]);
+  const [indiceAtual, setIndiceAtual] = useState(0);
+  const [erro, setErro] = useState("");
 
- const programacao = useMemo(() => {
-  const urlsVistas = new Set()
+  const programacao = useMemo(() => {
+    const urlsVistas = new Set();
 
-  return anuncios
-    .filter((anuncio) => {
-      if (!anuncio?.arquivo_url) {
-        return false
-      }
+    return anuncios
+      .filter((anuncio) => {
+        if (!anuncio?.arquivo_url) return false;
 
-      if (urlsVistas.has(anuncio.arquivo_url)) {
-        return false
-      }
+        if (urlsVistas.has(anuncio.arquivo_url)) {
+          return false;
+        }
 
-      urlsVistas.add(anuncio.arquivo_url)
-      return true
-    })
-    .map((anuncio) => ({
-      id: anuncio.id,
-      titulo: anuncio.titulo || "Publicidade",
-      cliente: anuncio.cliente || "",
-      tipo:
-        anuncio.tipo_midia === "video"
-          ? "video"
-          : "imagem",
-      src: anuncio.arquivo_url,
-      duracao:
-        Number(anuncio.duracao_segundos || 10) *
-        1000,
-    }))
-}, [anuncios])
-      
+        urlsVistas.add(anuncio.arquivo_url);
+        return true;
+      })
+      .map((anuncio) => ({
+        id: anuncio.id,
+        titulo: anuncio.titulo || "Publicidade",
+        cliente: anuncio.cliente || "",
+        tipo:
+          anuncio.tipo_midia === "video"
+            ? "video"
+            : "imagem",
+        src: anuncio.arquivo_url,
+        duracao:
+          Number(anuncio.duracao_segundos || 10) * 1000,
+      }));
+  }, [anuncios]);
 
-  const midiaAtual =
-    programacao[indiceAtual] || null
+  const midiaAtual = programacao[indiceAtual] || null;
 
   async function carregarProgramacao() {
     try {
-      const resultado =
-        await listarAnunciosDaTela(CODIGO_TELA)
+      const resultado = await sincronizarTela(CODIGO_TELA);
 
-      setAnuncios(resultado.anuncios || [])
-      setErro("")
+      setAnuncios(resultado.anuncios || []);
+      setErro("");
     } catch (erroCarregamento) {
       console.error(
-        "Erro ao carregar anúncios:",
+        "Erro na sincronização da TV:",
         erroCarregamento
-      )
+      );
 
       setErro(
         erroCarregamento?.message ||
-          "Erro ao carregar programação."
-      )
+          "Erro ao sincronizar programação."
+      );
     }
   }
 
   function proximaMidia() {
     setIndiceAtual((indiceAnterior) => {
-      if (programacao.length <= 1) {
-        return 0
-      }
+      if (programacao.length <= 1) return 0;
 
-      return (
-        (indiceAnterior + 1) %
-        programacao.length
-      )
-    })
+      return (indiceAnterior + 1) % programacao.length;
+    });
   }
 
   useEffect(() => {
-    carregarProgramacao()
+    carregarProgramacao();
 
     const intervalo = window.setInterval(
       carregarProgramacao,
       TEMPO_ATUALIZACAO
-    )
+    );
 
-    return () => {
-      window.clearInterval(intervalo)
-    }
-  }, [])
+    return () => window.clearInterval(intervalo);
+  }, []);
 
   useEffect(() => {
     if (programacao.length === 0) {
-      setIndiceAtual(0)
-      return
+      setIndiceAtual(0);
+      return;
     }
 
     if (indiceAtual >= programacao.length) {
-      setIndiceAtual(0)
+      setIndiceAtual(0);
     }
-  }, [programacao.length, indiceAtual])
+  }, [programacao.length, indiceAtual]);
 
- useEffect(() => {
-  if (!midiaAtual) return
+  useEffect(() => {
+    if (!midiaAtual) return;
+    if (midiaAtual.tipo === "video") return;
 
-  if (midiaAtual.tipo === "video") {
-    return
-  }
+    const temporizador = window.setTimeout(
+      proximaMidia,
+      midiaAtual.duracao || 10000
+    );
 
-  const temporizador = window.setTimeout(() => {
-    proximaMidia()
-  }, midiaAtual.duracao || 10000)
-
-  return () => {
-    window.clearTimeout(temporizador)
-  }
-}, [
-  midiaAtual?.id,
-  midiaAtual?.duracao,
-  midiaAtual?.tipo,
-  programacao.length,
-])
+    return () => window.clearTimeout(temporizador);
+  }, [
+    midiaAtual?.id,
+    midiaAtual?.duracao,
+    midiaAtual?.tipo,
+    programacao.length,
+  ]);
 
   if (erro && !midiaAtual) {
     return (
@@ -128,7 +113,7 @@ export default function Playlist() {
         <strong>Erro ao carregar</strong>
         <small>{erro}</small>
       </div>
-    )
+    );
   }
 
   if (!midiaAtual) {
@@ -136,7 +121,7 @@ export default function Playlist() {
       <div className="playlist-vazia">
         <strong>Carregando programação...</strong>
       </div>
-    )
+    );
   }
 
   return (
@@ -155,21 +140,21 @@ export default function Playlist() {
           />
         ) : (
           <div className="imagem-player">
-  <div
-    className="player-background"
-    style={{
-      backgroundImage: `url("${midiaAtual.src}")`,
-    }}
-  />
+            <div
+              className="player-background"
+              style={{
+                backgroundImage: `url("${midiaAtual.src}")`,
+              }}
+            />
 
-  <img
-    key={midiaAtual.id}
-    src={midiaAtual.src}
-    alt={midiaAtual.titulo}
-    className="imagem-player-principal"
-    onError={proximaMidia}
-  />
-</div>
+            <img
+              key={midiaAtual.id}
+              src={midiaAtual.src}
+              alt={midiaAtual.titulo}
+              className="imagem-player-principal"
+              onError={proximaMidia}
+            />
+          </div>
         )}
       </div>
 
@@ -177,22 +162,17 @@ export default function Playlist() {
         <div>
           <span>EXIBINDO AGORA</span>
 
-          <strong>
-            {midiaAtual.titulo}
-          </strong>
+          <strong>{midiaAtual.titulo}</strong>
 
           {midiaAtual.cliente && (
-            <small>
-              Cliente: {midiaAtual.cliente}
-            </small>
+            <small>Cliente: {midiaAtual.cliente}</small>
           )}
         </div>
 
         <div className="playlist-posicao">
-          {indiceAtual + 1} de{" "}
-          {programacao.length}
+          {indiceAtual + 1} de {programacao.length}
         </div>
       </div>
     </div>
-  )
+  );
 }
