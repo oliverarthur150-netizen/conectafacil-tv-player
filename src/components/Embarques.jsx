@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react"
 import { listarEmbarquesDaTela } from "../services/embarques.service"
-
+import { CONFIG_TV } from "../config";
 const CODIGO_TELA = "LANCHA-01"
 const TEMPO_ATUALIZACAO = 10000
 
