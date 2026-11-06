@@ -1,9 +1,8 @@
 import { useEffect, useState } from "react"
 import { listarEmbarquesDaTela } from "../services/embarques.service"
 import { CONFIG_TV } from "../config";
-const CODIGO_TELA = "LANCHA-01"
-const TEMPO_ATUALIZACAO = 10000
-
+const CODIGO_TELA = CONFIG_TV.codigo;
+const TEMPO_ATUALIZACAO = CONFIG_TV.intervaloEmbarques;
 function formatarHorario(horario) {
   if (!horario) {
     return "--:--"
