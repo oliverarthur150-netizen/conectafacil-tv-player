@@ -14,3 +14,161 @@
 
   animation: playerFadeEntrada 0.8s ease;
 }
+
+
+/* =========================================
+   CONECTAFÁCIL TV - FAIXA DE EMBARQUES
+   Propaganda em tela cheia
+========================================= */
+
+.playlist-com-embarques {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+  background: #020914;
+}
+
+.playlist-com-embarques .playlist-area-midia {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+.playlist-com-embarques .imagem-player {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.playlist-com-embarques .imagem-player-principal {
+  width: 100%;
+  height: 100%;
+  object-fit: contain !important;
+  object-position: center center;
+}
+
+.playlist-com-embarques .player-video {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+/* Oculta informações antigas para não
+   disputar espaço com a nova faixa */
+.playlist-com-embarques .playlist-informacoes {
+  display: none;
+}
+
+/* FAIXA INFERIOR */
+
+.faixa-embarques {
+  position: absolute;
+  z-index: 10;
+  left: 0;
+  right: 0;
+  bottom: 0;
+
+  padding: 14px 24px 18px;
+
+  background: linear-gradient(
+    180deg,
+    rgba(4, 20, 40, 0.86),
+    rgba(3, 13, 29, 0.97)
+  );
+
+  border-top: 2px solid rgba(65, 166, 255, 0.65);
+  backdrop-filter: blur(12px);
+}
+
+.faixa-embarques-titulo {
+  color: #49aaff;
+  font-size: 19px;
+  font-weight: 900;
+  letter-spacing: 2px;
+  margin-bottom: 12px;
+}
+
+.faixa-embarques-lista {
+  display: flex;
+  align-items: stretch;
+  gap: 12px;
+  width: 100%;
+  overflow: hidden;
+}
+
+.faixa-embarque-item {
+  flex: 1;
+  min-width: 0;
+  padding: 12px 15px;
+
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 13px;
+}
+
+.faixa-embarque-horario {
+  color: #ffffff;
+  font-size: 32px;
+  font-weight: 900;
+}
+
+.faixa-embarque-rota {
+  color: #e6f1ff;
+  font-size: 16px;
+  font-weight: 800;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.faixa-embarque-status {
+  width: fit-content;
+  padding: 5px 10px;
+  border-radius: 30px;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.faixa-embarque-status.normal {
+  color: #65f49a;
+  background: rgba(34, 197, 94, 0.16);
+}
+
+.faixa-embarque-status.atrasado {
+  color: #facc15;
+  background: rgba(245, 158, 11, 0.16);
+}
+
+.faixa-embarque-status.cancelado {
+  color: #ff8585;
+  background: rgba(239, 68, 68, 0.16);
+}
+
+.faixa-embarques-vazio {
+  color: #ffffff;
+  font-size: 17px;
+  padding: 12px;
+}
+
+@media (max-width: 900px) {
+  .faixa-embarques {
+    padding: 10px;
+  }
+
+  .faixa-embarque-horario {
+    font-size: 22px;
+  }
+
+  .faixa-embarque-rota {
+    font-size: 12px;
+  }
+}
