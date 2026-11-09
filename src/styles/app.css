@@ -167,6 +167,91 @@
   .faixa-embarque-horario {
     font-size: 22px;
   }
+  
+/* ==========================================
+   CORREÇÃO DA ALTURA DO PLAYER CONECTAFÁCIL
+========================================== */
+
+html,
+body {
+  width: 100%;
+  height: 100%;
+  min-height: 100%;
+  margin: 0 !important;
+  padding: 0;
+  overflow: hidden;
+}
+
+#root {
+  width: 100%;
+  height: 100%;
+  min-height: 100%;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+}
+
+.tv-home {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+
+  width: 100%;
+  height: 100vh;
+  height: 100dvh;
+  min-height: 0;
+
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+}
+
+.player-tv {
+  position: relative;
+  display: flex;
+  flex: 1 1 auto;
+
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+
+  overflow: hidden;
+}
+
+.playlist-com-embarques {
+  position: relative;
+  flex: 1 1 auto;
+
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+
+  overflow: hidden;
+}
+
+.playlist-com-embarques .playlist-area-midia {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.playlist-com-embarques .imagem-player {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.playlist-com-embarques .imagem-player-principal {
+  width: 100%;
+  height: 100%;
+  object-fit: contain !important;
+  object-position: center center;
+}
+
 
   .faixa-embarque-rota {
     font-size: 12px;
