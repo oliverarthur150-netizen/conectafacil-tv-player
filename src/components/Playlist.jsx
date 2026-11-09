@@ -6,8 +6,13 @@ import { CONFIG_TV } from "../config";
 const CODIGO_TELA = CONFIG_TV.codigo;
 const TEMPO_ATUALIZACAO = CONFIG_TV.intervaloAnuncios;
 
+function formatarHorario(horario) {
+  return horario ? String(horario).slice(0, 5) : "--:--";
+}
+
 export default function Playlist() {
   const [anuncios, setAnuncios] = useState([]);
+  const [embarques, setEmbarques] = useState([]);
   const [indiceAtual, setIndiceAtual] = useState(0);
   const [erro, setErro] = useState("");
 
@@ -17,11 +22,7 @@ export default function Playlist() {
     return anuncios
       .filter((anuncio) => {
         if (!anuncio?.arquivo_url) return false;
-
-        if (urlsVistas.has(anuncio.arquivo_url)) {
-          return false;
-        }
-
+        if (urlsVistas.has(anuncio.arquivo_url)) return false;
         urlsVistas.add(anuncio.arquivo_url);
         return true;
       })
@@ -29,13 +30,9 @@ export default function Playlist() {
         id: anuncio.id,
         titulo: anuncio.titulo || "Publicidade",
         cliente: anuncio.cliente || "",
-        tipo:
-          anuncio.tipo_midia === "video"
-            ? "video"
-            : "imagem",
+        tipo: anuncio.tipo_midia === "video" ? "video" : "imagem",
         src: anuncio.arquivo_url,
-        duracao:
-          Number(anuncio.duracao_segundos || 10) * 1000,
+        duracao: Number(anuncio.duracao_segundos || 10) * 1000,
       }));
   }, [anuncios]);
 
@@ -46,26 +43,38 @@ export default function Playlist() {
       const resultado = await sincronizarTela(CODIGO_TELA);
 
       setAnuncios(resultado.anuncios || []);
+      setEmbarques(resultado.embarques || []);
       setErro("");
     } catch (erroCarregamento) {
-      console.error(
-        "Erro na sincronização da TV:",
-        erroCarregamento
-      );
-
-      setErro(
-        erroCarregamento?.message ||
-          "Erro ao sincronizar programação."
-      );
+      console.error("Erro na sincronização:", erroCarregamento);
+      setErro(erroCarregamento?.message || "Erro ao sincronizar.");
     }
   }
 
-  function proximaMidia() {
-    setIndiceAtual((indiceAnterior) => {
-      if (programacao.length <= 1) return 0;
+  function proximosEmbarques(lista) {
+    const agora = new Date();
+    const minutosAgora = agora.getHours() * 60 + agora.getMinutes();
 
-      return (indiceAnterior + 1) % programacao.length;
-    });
+    return lista
+      .filter((item) => {
+        if (!item?.horario || item.ativo === false) return false;
+
+        const [hora, minuto] = String(item.horario)
+          .slice(0, 5)
+          .split(":")
+          .map(Number);
+
+        return hora * 60 + minuto + 3 >= minutosAgora;
+      })
+      .slice(0, 4);
+  }
+
+  function proximaMidia() {
+    setIndiceAtual((anterior) =>
+      programacao.length <= 1
+        ? 0
+        : (anterior + 1) % programacao.length
+    );
   }
 
   useEffect(() => {
@@ -80,19 +89,13 @@ export default function Playlist() {
   }, []);
 
   useEffect(() => {
-    if (programacao.length === 0) {
-      setIndiceAtual(0);
-      return;
-    }
-
-    if (indiceAtual >= programacao.length) {
+    if (!programacao.length || indiceAtual >= programacao.length) {
       setIndiceAtual(0);
     }
   }, [programacao.length, indiceAtual]);
 
   useEffect(() => {
-    if (!midiaAtual) return;
-    if (midiaAtual.tipo === "video") return;
+    if (!midiaAtual || midiaAtual.tipo === "video") return;
 
     const temporizador = window.setTimeout(
       proximaMidia,
@@ -100,12 +103,7 @@ export default function Playlist() {
     );
 
     return () => window.clearTimeout(temporizador);
-  }, [
-    midiaAtual?.id,
-    midiaAtual?.duracao,
-    midiaAtual?.tipo,
-    programacao.length,
-  ]);
+  }, [midiaAtual?.id, midiaAtual?.duracao, midiaAtual?.tipo]);
 
   if (erro && !midiaAtual) {
     return (
@@ -124,8 +122,10 @@ export default function Playlist() {
     );
   }
 
+  const embarquesVisiveis = proximosEmbarques(embarques);
+
   return (
-    <div className="playlist">
+    <div className="playlist playlist-com-embarques">
       <div className="playlist-area-midia">
         {midiaAtual.tipo === "video" ? (
           <video
@@ -142,11 +142,8 @@ export default function Playlist() {
           <div className="imagem-player">
             <div
               className="player-background"
-              style={{
-                backgroundImage: `url("${midiaAtual.src}")`,
-              }}
+              style={{ backgroundImage: `url("${midiaAtual.src}")` }}
             />
-
             <img
               key={midiaAtual.id}
               src={midiaAtual.src}
@@ -161,18 +158,51 @@ export default function Playlist() {
       <div className="playlist-informacoes">
         <div>
           <span>EXIBINDO AGORA</span>
-
           <strong>{midiaAtual.titulo}</strong>
-
-          {midiaAtual.cliente && (
-            <small>Cliente: {midiaAtual.cliente}</small>
-          )}
+          {midiaAtual.cliente && <small>Cliente: {midiaAtual.cliente}</small>}
         </div>
-
         <div className="playlist-posicao">
           {indiceAtual + 1} de {programacao.length}
         </div>
       </div>
+
+      <section className="faixa-embarques">
+        <div className="faixa-embarques-titulo">
+          PRÓXIMOS EMBARQUES
+        </div>
+
+        <div className="faixa-embarques-lista">
+          {embarquesVisiveis.length === 0 ? (
+            <div className="faixa-embarques-vazio">
+              Nenhum embarque próximo
+            </div>
+          ) : (
+            embarquesVisiveis.map((item) => (
+              <div className="faixa-embarque-item" key={item.id}>
+                <strong className="faixa-embarque-horario">
+                  {formatarHorario(item.horario)}
+                </strong>
+
+                <span className="faixa-embarque-rota">
+                  {item.origem} → {item.destino}
+                </span>
+
+                <span
+                  className={`faixa-embarque-status ${
+                    item.status === "Cancelado"
+                      ? "cancelado"
+                      : item.status === "Atrasado"
+                      ? "atrasado"
+                      : "normal"
+                  }`}
+                >
+                  {item.status || "No horário"}
+                </span>
+              </div>
+            ))
+          )}
+        </div>
+      </section>
     </div>
   );
 }
