@@ -252,6 +252,91 @@ body {
   object-position: center center;
 }
 
+/* =========================================
+   CONECTAFÁCIL TV - RESTAURAÇÃO DO PLAYER
+========================================= */
+
+html,
+body,
+#root {
+  width: 100% !important;
+  height: 100% !important;
+  min-height: 100% !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+}
+
+.tv-home {
+  display: flex !important;
+  flex-direction: column !important;
+  position: relative;
+
+  width: 100% !important;
+  height: 100vh !important;
+  height: 100dvh !important;
+  min-height: 0 !important;
+
+  margin: 0 !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+}
+
+.player-tv {
+  display: flex !important;
+  flex: 1 1 auto !important;
+
+  width: 100% !important;
+  height: 100% !important;
+  min-height: 0 !important;
+  min-width: 0 !important;
+
+  overflow: hidden !important;
+}
+
+.playlist-com-embarques {
+  display: flex !important;
+  flex-direction: column !important;
+  flex: 1 1 auto !important;
+
+  position: relative !important;
+  width: 100% !important;
+  height: 100% !important;
+  min-height: 0 !important;
+
+  overflow: hidden !important;
+}
+
+.playlist-area-midia {
+  position: absolute !important;
+  inset: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+}
+
+.imagem-player {
+  position: absolute !important;
+  inset: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+}
+
+.imagem-player-principal {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: contain !important;
+  object-position: center !important;
+}
+
+/* Horários sobre a propaganda */
+.faixa-embarques {
+  position: absolute !important;
+  z-index: 10 !important;
+  left: 0;
+  right: 0;
+  bottom: 0;
+}
+
 
   .faixa-embarque-rota {
     font-size: 12px;
